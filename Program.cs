@@ -3,7 +3,7 @@ using Microsoft.AspNetCore.Identity;
 
 // Connection info stored in appsettings.json
 IConfiguration configuration = new ConfigurationBuilder()
-    .AddJsonFile("appsettings.json")
+    .AddJsonFile("rename.appsettings.json")
     .Build();
 
 var builder = WebApplication.CreateBuilder(args);
