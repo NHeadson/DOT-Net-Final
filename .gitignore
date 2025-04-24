@@ -2,4 +2,4 @@
 bin
 obj
 Properties
-appsettings.json
+rename.appsettings.json
