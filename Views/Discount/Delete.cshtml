@@ -8,20 +8,19 @@
     <dl class="row">
         <dt class="col-sm-2">Title</dt>
         <dd class="col-sm-10">@Model.Title</dd>
-        <dt class="col-sm-2">Description</dt>
-        <dd class="col-sm-10">@Model.Description</dd>
         <dt class="col-sm-2">Product</dt>
         <dd class="col-sm-10">@Model.Product.ProductName</dd>
         <dt class="col-sm-2">Discount Percent</dt>
-        <dd class="col-sm-10">@Model.DiscountPercent</dd>
-        <dt class="col-sm-2">Start Time</dt>
-        <dd class="col-sm-10">@Model.StartTime</dd>
-        <dt class="col-sm-2">End Time</dt>
-        <dd class="col-sm-10">@Model.EndTime</dd>
+        <dd class="col-sm-10">@string.Format("{0}%", Model.DiscountPercent * 100)</dd>
+        <dt class="col-sm-2">Start Date</dt>
+        <dd class="col-sm-10">@Model.StartTime.ToString("MM-dd-yyyy")</dd>
+        <dt class="col-sm-2">End Date</dt>
+        <dd class="col-sm-10">@Model.EndTime.ToString("MM-dd-yyyy")</dd>
     </dl>
 </div>
 
-<form asp-action="DeleteConfirmed" method="post">
+<form asp-action="Delete" method="post">
+    @Html.AntiForgeryToken()
     <input type="hidden" asp-for="DiscountId" />
     <button type="submit" class="btn btn-danger">Delete</button>
     <a asp-action="Index" class="btn btn-secondary">Cancel</a>

@@ -7,12 +7,10 @@ using Microsoft.AspNetCore.Mvc;
 public class DiscountController : Controller
 {
     private readonly DataContext _dataContext;
-    private readonly UserManager<AppUser> _userManager;
 
-    public DiscountController(DataContext dataContext, UserManager<AppUser> userManager)
+    public DiscountController(DataContext db)
     {
-        _dataContext = dataContext;
-        _userManager = userManager;
+        _dataContext = db;
     }
 
     public IActionResult Index()
@@ -21,44 +19,88 @@ public class DiscountController : Controller
         return View(discounts);
     }
 
-    public IActionResult Create() => View(new Discount());
-
-    [HttpPost, ValidateAntiForgeryToken]
-public async Task<IActionResult> Create(Discount discount)
-{
-    if (ModelState.IsValid)
+    public IActionResult Create()
     {
-        discount.Code = new Random().Next(1000, 9999); // Generate random code
-        _dataContext.Discounts.Add(discount);
-        await _dataContext.SaveChangesAsync();
-        return RedirectToAction(nameof(Index));
+        ViewBag.Products = _dataContext.Products.ToList();
+        return View(new Discount());
     }
-    return View(discount);
-}
 
-[HttpPost, ValidateAntiForgeryToken]
-public async Task<IActionResult> Edit(Discount discount)
-{
-    if (ModelState.IsValid)
+    [HttpPost]
+    public IActionResult Create(Discount discount)
     {
-        _dataContext.Discounts.Update(discount);
-        await _dataContext.SaveChangesAsync();
-        return RedirectToAction(nameof(Index));
+        if (ModelState.IsValid)
+        {
+            discount.DiscountPercent /= 100;
+
+            discount.Code = Guid.NewGuid().ToString().Substring(0, 4).ToUpper();
+
+            _dataContext.Discounts.Add(discount);
+            _dataContext.SaveChanges();
+            return RedirectToAction("Index");
+        }
+        ViewBag.Products = _dataContext.Products.ToList();
+        return View(discount);
     }
-    return View(discount);
-}
 
-    public IActionResult Delete(int id) => View(_dataContext.Discounts.FirstOrDefault(d => d.DiscountId == id));
-
-    [HttpPost, ValidateAntiForgeryToken]
-    public async Task<IActionResult> DeleteConfirmed(int id)
+    public IActionResult Edit(int id)
     {
+        var discount = _dataContext.Discounts.FirstOrDefault(d => d.DiscountId == id);
+        if (discount == null) return NotFound();
+        ViewBag.Products = _dataContext.Products.ToList();
+        return View(discount);
+    }
+
+    [HttpPost]
+    public IActionResult Edit(Discount discount)
+    {
+        if (ModelState.IsValid)
+        {
+            var existingDiscount = _dataContext.Discounts.FirstOrDefault(d => d.DiscountId == discount.DiscountId);
+            if (existingDiscount != null)
+            {
+                existingDiscount.Title = discount.Title;
+                existingDiscount.ProductId = discount.ProductId;
+                existingDiscount.DiscountPercent = discount.DiscountPercent / 100;
+                existingDiscount.StartTime = discount.StartTime;
+                existingDiscount.EndTime = discount.EndTime;
+                existingDiscount.Description = discount.Description;
+
+                _dataContext.SaveChanges();
+            }
+            else
+        {
+            return NotFound();
+        }
+
+            return RedirectToAction("Index");
+        }
+
+        ViewBag.Products = _dataContext.Products.ToList();
+        return View(discount);
+    }
+
+    public IActionResult Delete(int id)
+    {
+        var discount = _dataContext.Discounts.Include(d => d.Product).FirstOrDefault(d => d.DiscountId == id);
+        if (discount == null)
+        {
+            return NotFound();
+        }
+        return View(discount);
+    }
+
+    [HttpPost]
+    [ActionName("Delete")]
+    public IActionResult DeleteConfirmed(int id)
+    {
+        Console.WriteLine($"DeleteConfirmed called with id: {id}"); // Debugging log
+
         var discount = _dataContext.Discounts.FirstOrDefault(d => d.DiscountId == id);
         if (discount != null)
         {
             _dataContext.Discounts.Remove(discount);
-            await _dataContext.SaveChangesAsync();
+            _dataContext.SaveChanges();
         }
-        return RedirectToAction(nameof(Index));
+        return RedirectToAction("Index");
     }
 }

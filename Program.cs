@@ -23,21 +23,15 @@ using (var scope = app.Services.CreateScope())
         await roleManager.CreateAsync(new IdentityRole("employee"));
     }
 
-    // Assign the "employee" role to all users
-    var users = await userManager.Users.ToListAsync();
-    foreach (var user in users)
+    // Create a test employee account
+    if (await userManager.FindByEmailAsync("employee@test.com") == null)
     {
-        if (!await userManager.IsInRoleAsync(user, "employee"))
+        var employeeUser = new AppUser { UserName = "employee@nwind.com", Email = "employee@nwind.com" };
+        var result = await userManager.CreateAsync(employeeUser, "B@nanas1");
+        if (result.Succeeded)
         {
-            await userManager.AddToRoleAsync(user, "employee");
+            await userManager.AddToRoleAsync(employeeUser, "employee");
         }
-    }
-
-    var employees = await userManager.Users.ToListAsync();
-    foreach (var employee in employees)
-    {
-        var token = await userManager.GeneratePasswordResetTokenAsync(employee);
-        await userManager.ResetPasswordAsync(employee, token, "B@nanas1"); // Set a new password
     }
 }
 

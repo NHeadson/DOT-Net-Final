@@ -1,4 +1,5 @@
 using Microsoft.EntityFrameworkCore;
+using Microsoft.AspNetCore.Identity;
 
 public class DataContext : DbContext
 {
@@ -8,6 +9,7 @@ public class DataContext : DbContext
   public DbSet<Category> Categories { get; set; }
   public DbSet<Discount> Discounts { get; set; }
   public DbSet<Customer> Customers { get; set; }
+  public DbSet<Employee> Employees { get; set; }
 
   public void AddCustomer(Customer customer)
   {
@@ -27,8 +29,11 @@ public class DataContext : DbContext
     SaveChanges();
   }
   protected override void OnModelCreating(ModelBuilder modelBuilder)
-    {
-        base.OnModelCreating(modelBuilder);
+  {
+    base.OnModelCreating(modelBuilder);
 
-    }
+    modelBuilder.Entity<Employee>().ToTable("Employees", t => t.ExcludeFromMigrations());
+    modelBuilder.Entity<IdentityRole>().ToTable("AspNetRoles", t => t.ExcludeFromMigrations());
+  }
+  
 }
